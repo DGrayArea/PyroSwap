@@ -2,8 +2,8 @@
   "name": "pyroswap-monorepo",
   "private": true,
   "scripts": {
-    "web:dev": "npm run dev -w apps/web",
-    "web:build": "npm run build -w apps/web",
+    "web:dev": "pnpm run dev --filter pyro-swap",
+    "web:build": "pnpm run build --filter pyro-swap",
     "anchor:build": "cd anchor && anchor build"
   },
   "workspaces": [
