@@ -1,0 +1,109 @@
+{
+  "version": "0.1.0",
+  "name": "pyro_swap",
+  "address": "GC2uAgNLinafxsPP8KNBkM4HZcu1jTZUgGfgV7DUhjnt",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "admin", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "protocolFeeBps", "type": "u16" },
+        { "name": "referralFeeShareBps", "type": "u16" }
+      ]
+    },
+    {
+      "name": "openPosition",
+      "accounts": [
+        { "name": "position", "isMut": true, "isSigner": false },
+        { "name": "owner", "isMut": true, "isSigner": true },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "inputMint", "isMut": false, "isSigner": false },
+        { "name": "outputMint", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "amountIn", "type": "u64" },
+        { "name": "slBps", "type": "u16" },
+        { "name": "tpBps", "type": "u16" },
+        { "name": "entryPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "executePosition",
+      "accounts": [
+        { "name": "position", "isMut": true, "isSigner": false },
+        { "name": "keeper", "isMut": true, "isSigner": true },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "userOutputToken", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "currentPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "withdrawManual",
+      "accounts": [
+        { "name": "position", "isMut": true, "isSigner": false },
+        { "name": "owner", "isMut": true, "isSigner": true },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "swap",
+      "accounts": [
+        { "name": "authority", "isMut": false, "isSigner": true },
+        { "name": "userSourceToken", "isMut": true, "isSigner": false },
+        { "name": "userDestinationToken", "isMut": true, "isSigner": false },
+        { "name": "protocolFeeDestination", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "amount", "type": "u64" },
+        { "name": "minAmountOut", "type": "u64" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "admin", "type": "publicKey" },
+          { "name": "protocolFeeBps", "type": "u16" },
+          { "name": "referralFeeShareBps", "type": "u16" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "owner", "type": "publicKey" },
+          { "name": "vault", "type": "publicKey" },
+          { "name": "inputMint", "type": "publicKey" },
+          { "name": "outputMint", "type": "publicKey" },
+          { "name": "amountIn", "type": "u64" },
+          { "name": "slBps", "type": "u16" },
+          { "name": "tpBps", "type": "u16" },
+          { "name": "entryPrice", "type": "u64" },
+          { "name": "executionFeeEscrow", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "GC2uAgNLinafxsPP8KNBkM4HZcu1jTZUgGfgV7DUhjnt"
+  }
+}
