@@ -3,3 +3,12 @@
 .env
 
 /program/node_modules
+
+/program/target
+
+/.next
+
+
+./.DS_Store
+
+.DS_Store

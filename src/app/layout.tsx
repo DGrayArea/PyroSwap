@@ -1,21 +1,14 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { WalletContextProvider } from "@/components/WalletContextProvider";
+import type { Metadata } from 'next';
+import { Outfit, Inter } from 'next/font/google';
+import './globals.css';
+import { WalletContextProvider } from '@/components/providers/WalletContextProvider';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: "PyroSwap | Professional Solana AMM & SL/TP",
-  description: "Next-generation Solana swap with built-in Stop Loss and Take Profit positions.",
+  title: 'PyroSwap | Advanced Conditional Trading',
+  description: 'Instant swaps and decentralized limit orders on Solana.',
 };
 
 export default function RootLayout({
@@ -25,11 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-50`}
-      >
+      <body className={`${outfit.variable} ${inter.variable} font-sans`}>
         <WalletContextProvider>
-          {children}
+            {children}
         </WalletContextProvider>
       </body>
     </html>

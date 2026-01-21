@@ -46,6 +46,7 @@ pub fn handler(
     sl_bps: u16,
     tp_bps: u16,
     entry_price: u64,
+    execution_fee: u64, // New argument: The bounty for the bot (in lamports)
 ) -> Result<()> {
     let position = &mut ctx.accounts.position;
     position.owner = ctx.accounts.user.key();
@@ -56,16 +57,34 @@ pub fn handler(
     position.sl_bps = sl_bps;
     position.tp_bps = tp_bps;
     position.entry_price = entry_price;
+    position.execution_fee_escrow = execution_fee; // Store it so we know how much to pay the bot
     position.bump = ctx.bumps.position;
+    
+    // Position referrer is left as None (default/unused for SL/TP)
+    position.referrer = None;
 
-    // Jupiter Swap CPI
-    // The specific routing instructions and accounts are passed as remaining accounts
-    // by the client (frontend/keeper) to avoid hardcoding complex DEX paths.
-    
-    // 1. Transfer tokens from user to a temporary authority or just use direct CPI if possible
-    // For Jupiter CPI, we typically use the standard `invoke` or `invoke_signed`.
-    
+    // 1. Transfer the Execution Fee (SOL) from User to the Position Account
+    // This effectively "tops up" the account with the bot's future payment.
+    let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
+        &ctx.accounts.user.key(),
+        &position.key(),
+        execution_fee,
+    );
+    anchor_lang::solana_program::program::invoke(
+        &transfer_ix,
+        &[
+            ctx.accounts.user.to_account_info(),
+            position.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+    )?;
+
+    // 2. Jupiter Swap CPI / Token Transfer Logic
+    // (Existing placeholder logic...)
+    // For MVP, we assume tokens are transferred to the vault here (not shown in this snippet)
+
     msg!("Opening position with SL: {} bps, TP: {} bps", sl_bps, tp_bps);
+    msg!("Escrowed execution fee: {} lamports", execution_fee);
     
     Ok(())
 }
