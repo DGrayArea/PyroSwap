@@ -9,6 +9,15 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'PyroSwap | Advanced Conditional Trading',
   description: 'Instant swaps and decentralized limit orders on Solana.',
+  icons: {
+    icon: '/pyro-icon.png',
+    apple: '/pyro-icon.png',
+  },
+  openGraph: {
+    title: 'PyroSwap | Advanced Conditional Trading',
+    description: 'Instant swaps and decentralized limit orders on Solana.',
+    images: ['/pyro-icon.png'],
+  },
 };
 
 export default function RootLayout({

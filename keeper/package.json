@@ -1,0 +1,25 @@
+{
+  "name": "pyroswap-keeper",
+  "version": "1.0.0",
+  "description": "Keeper bot for PyroSwap limit orders",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/main.ts",
+    "start:devnet": "CLUSTER=devnet ts-node src/main.ts",
+    "start:mainnet": "CLUSTER=mainnet-beta ts-node src/main.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/web3.js": "^1.91.0",
+    "@solana/spl-token": "^0.4.1",
+    "@pythnetwork/client": "^2.19.0",
+    "dotenv": "^16.4.5",
+    "bs58": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.11.24"
+  }
+}

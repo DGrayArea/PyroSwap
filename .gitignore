@@ -1,14 +1,56 @@
-/node_modules
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# dependencies
+/node_modules
+node_modules/
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# next.js
+/.next/
+/out/
+.next/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
 .env
 
-/program/node_modules
+# vercel
+.vercel
 
-/program/target
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
-/.next
+# Solana/Anchor program artifacts
+programs/**/target/
+programs/**/.anchor/
+programs/**/test-ledger/
+**/target/debug/
+**/target/release/
+**/target/deploy/
+**/.anchor/
+**/test-ledger/
 
+# IDL files (generated)
+programs/**/idl/
 
-./.DS_Store
-
-.DS_Store
+# Keypairs (NEVER commit these!)
+*.json
+!package.json
+!tsconfig.json
+!**/Anchor.toml
+!programs/**/Cargo.toml

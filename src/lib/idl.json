@@ -19,32 +19,53 @@
       "name": "openPosition",
       "accounts": [
         { "name": "position", "isMut": true, "isSigner": false },
-        { "name": "owner", "isMut": true, "isSigner": true },
         { "name": "vault", "isMut": true, "isSigner": false },
         { "name": "inputMint", "isMut": false, "isSigner": false },
         { "name": "outputMint", "isMut": false, "isSigner": false },
+        { "name": "oraclePriceFeed", "isMut": false, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "userInputToken", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false },
-        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+        { "name": "rent", "isMut": false, "isSigner": false }
       ],
       "args": [
         { "name": "amountIn", "type": "u64" },
         { "name": "slBps", "type": "u16" },
         { "name": "tpBps", "type": "u16" },
-        { "name": "entryPrice", "type": "u64" }
+        { "name": "entryPrice", "type": "u64" },
+        { "name": "executionFee", "type": "u64" },
+        { "name": "preferredDex", "type": "u8" }
       ]
     },
     {
       "name": "executePosition",
       "accounts": [
         { "name": "position", "isMut": true, "isSigner": false },
-        { "name": "keeper", "isMut": true, "isSigner": true },
         { "name": "vault", "isMut": true, "isSigner": false },
-        { "name": "userOutputToken", "isMut": true, "isSigner": false },
-        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+        { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "executor", "isMut": true, "isSigner": true },
+        { "name": "oraclePriceFeed", "isMut": false, "isSigner": false },
+        { "name": "config", "isMut": false, "isSigner": false },
+        { "name": "protocolFeeDestination", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": [
         { "name": "currentPrice", "type": "u64" }
       ]
+    },
+    {
+      "name": "cancelPosition",
+      "accounts": [
+        { "name": "position", "isMut": true, "isSigner": false },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "owner", "isMut": true, "isSigner": true },
+        { "name": "ownerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
     },
     {
       "name": "withdrawManual",
@@ -63,11 +84,13 @@
         { "name": "userSourceToken", "isMut": true, "isSigner": false },
         { "name": "userDestinationToken", "isMut": true, "isSigner": false },
         { "name": "protocolFeeDestination", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": false, "isSigner": false },
         { "name": "tokenProgram", "isMut": false, "isSigner": false }
       ],
       "args": [
         { "name": "amount", "type": "u64" },
-        { "name": "minAmountOut", "type": "u64" }
+        { "name": "minAmountOut", "type": "u64" },
+        { "name": "preferredDex", "type": "u8" }
       ]
     }
   ],
@@ -78,8 +101,11 @@
         "kind": "struct",
         "fields": [
           { "name": "admin", "type": "publicKey" },
+          { "name": "feeDestination", "type": "publicKey" },
           { "name": "protocolFeeBps", "type": "u16" },
           { "name": "referralFeeShareBps", "type": "u16" },
+          { "name": "totalPositionsCreated", "type": "u64" },
+          { "name": "totalVolume", "type": "u64" },
           { "name": "bump", "type": "u8" }
         ]
       }
@@ -93,15 +119,57 @@
           { "name": "vault", "type": "publicKey" },
           { "name": "inputMint", "type": "publicKey" },
           { "name": "outputMint", "type": "publicKey" },
+          { "name": "referrer", "type": { "option": "publicKey" } },
           { "name": "amountIn", "type": "u64" },
           { "name": "slBps", "type": "u16" },
           { "name": "tpBps", "type": "u16" },
           { "name": "entryPrice", "type": "u64" },
           { "name": "executionFeeEscrow", "type": "u64" },
+          { "name": "oraclePriceFeed", "type": "publicKey" },
+          { "name": "preferredDex", "type": { "defined": "DexType" } },
+          { "name": "status", "type": { "defined": "PositionStatus" } },
+          { "name": "createdAt", "type": "i64" },
+          { "name": "executedAt", "type": { "option": "i64" } },
           { "name": "bump", "type": "u8" }
         ]
       }
     }
+  ],
+  "types": [
+    {
+      "name": "DexType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "Raydium" },
+          { "name": "Orca" },
+          { "name": "Meteora" },
+          { "name": "PumpFun" },
+          { "name": "Phoenix" },
+          { "name": "Lifinity" }
+        ]
+      }
+    },
+    {
+      "name": "PositionStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "Active" },
+          { "name": "Executed" },
+          { "name": "Cancelled" }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "StopLossTooHigh", "msg": "Stop loss percentage too high" },
+    { "code": 6001, "name": "TakeProfitTooLow", "msg": "Take profit percentage too low" },
+    { "code": 6002, "name": "ExecutionFeeTooLow", "msg": "Execution fee too low" },
+    { "code": 6003, "name": "InvalidDexType", "msg": "Invalid DEX type" },
+    { "code": 6004, "name": "PositionAlreadyExecuted", "msg": "Position already executed or cancelled" },
+    { "code": 6005, "name": "OraclePriceStale", "msg": "Oracle price is stale" },
+    { "code": 6006, "name": "OracleConfidenceTooLow", "msg": "Oracle confidence too low" }
   ],
   "metadata": {
     "address": "GC2uAgNLinafxsPP8KNBkM4HZcu1jTZUgGfgV7DUhjnt"

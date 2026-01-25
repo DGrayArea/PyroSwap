@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 use crate::state::*;
+use crate::dex::DexAdapter;
 
 #[derive(Accounts)]
 pub struct Swap<'info> {
@@ -34,10 +35,10 @@ pub fn handler(
     ctx: Context<Swap>, 
     amount: u64, 
     min_amount_out: u64,
-    referral_fee_bps: u16
+    preferred_dex: u8 // 0=Raydium, 1=Orca, 2=Meteora, 3=PumpFun
 ) -> Result<()> {
     // 1. Validation
-    require!(referral_fee_bps <= 1000, ErrorCode::dbr); // Max 10%
+    require!(amount > 0, ErrorCode::InvalidAmount);
 
     let config = &ctx.accounts.config;
     
@@ -46,12 +47,16 @@ pub fn handler(
     let protocol_fee = (amount as u128 * config.protocol_fee_bps as u128 / 10000) as u64;
     
     // Referral Fee (Variable)
-    let referral_fee = (amount as u128 * referral_fee_bps as u128 / 10000) as u64;
+    let referral_fee = if ctx.accounts.referrer_fee_account.is_some() {
+        (amount as u128 * config.referral_fee_share_bps as u128 / 10000) as u64
+    } else {
+        0
+    };
 
     let total_fee = protocol_fee + referral_fee;
-    let _swap_amount = amount.checked_sub(total_fee).ok_or(ErrorCode::NotEnoughFunds)?;
+    let swap_amount = amount.checked_sub(total_fee).ok_or(ErrorCode::NotEnoughFunds)?;
 
-    msg!("Swapping: {}. Protocol Fee: {}. Referral Fee: {}", _swap_amount, protocol_fee, referral_fee);
+    msg!("Swapping: {}. Protocol Fee: {}. Referral Fee: {}", swap_amount, protocol_fee, referral_fee);
 
     // 3. Transfer Protocol Fee
     if protocol_fee > 0 {
@@ -77,15 +82,19 @@ pub fn handler(
         }
     }
 
-    // 5. Jupiter Swap CPI
-    // In a real integration, we would now invoke the Jupiter program (passed in remaining_accounts)
-    // using the remaining `swap_amount`.
-    // The `authority` here is the USER (Signer), so the user will sign the Jupiter transaction directly
-    // after our program takes its cut.
-    // NOTE: This requires the frontend to construct the transaction such that:
-    // Ix1: PyroSwap::swap (Does logic above)
-    // Ix2: Jupiter::swap (Does the actual swap)
-    // OR we do a CPI call here if we want atomic enforcement (more complex due to account size).
+    // 5. Execute Swap on preferred DEX
+    // The DEX accounts are passed as remaining_accounts
+    let dex_accounts = ctx.remaining_accounts;
+    
+    let amount_out = match preferred_dex {
+        0 => crate::dex::raydium::RaydiumAdapter::swap(swap_amount, min_amount_out, dex_accounts, None)?,
+        1 => crate::dex::orca::OrcaAdapter::swap(swap_amount, min_amount_out, dex_accounts, None)?,
+        2 => crate::dex::meteora::MeteoraAdapter::swap(swap_amount, min_amount_out, dex_accounts, None)?,
+        3 => crate::dex::pumpfun::PumpFunAdapter::swap(swap_amount, min_amount_out, dex_accounts, None)?,
+        _ => return Err(ErrorCode::InvalidDexType.into()),
+    };
+
+    msg!("Swap executed via DEX {}. Amount out: {}", preferred_dex, amount_out);
     
     Ok(())
 }
@@ -96,4 +105,8 @@ pub enum ErrorCode {
     dbr,
     #[msg("Not enough funds to cover fees")]
     NotEnoughFunds,
+    #[msg("Invalid DEX type")]
+    InvalidDexType,
+    #[msg("Invalid amount")]
+    InvalidAmount,
 }

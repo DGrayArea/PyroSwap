@@ -6,8 +6,7 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
-
-require('@solana/wallet-adapter-react-ui/styles.css');
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
@@ -17,10 +16,23 @@ export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children })
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
     const wallets = useMemo(
-        () => [
-            new PhantomWalletAdapter(),
-            new SolflareWalletAdapter(),
-        ],
+        () => {
+            const walletAdapters = [
+                new PhantomWalletAdapter(),
+                new SolflareWalletAdapter(),
+            ];
+            
+            // Deduplicate wallets by name to avoid React key conflicts
+            const seen = new Set<string>();
+            return walletAdapters.filter((wallet) => {
+                const name = wallet.name;
+                if (seen.has(name)) {
+                    return false;
+                }
+                seen.add(name);
+                return true;
+            });
+        },
         [network]
     );
 

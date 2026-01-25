@@ -4,60 +4,67 @@ import { Navbar } from '@/components/layout/Navbar';
 import { SwapCard } from '@/components/feature/SwapCard';
 import { PositionCard } from '@/components/feature/PositionCard';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'swap' | 'position'>('swap');
 
   return (
-    <main className="min-h-screen bg-background text-foreground relative overflow-hidden">
+    <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* Hero / Light Effects */}
-      <div className="fixed top-0 left-0 w-full h-[500px] pointer-events-none">
-          <div className="absolute top-[-20%] left-[20%] w-[600px] h-[600px] bg-primary/20 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{animationDuration: '4s'}} />
-          <div className="absolute top-[-10%] right-[10%] w-[500px] h-[500px] bg-secondary/10 blur-[100px] rounded-full mix-blend-screen" />
+      {/* Subtle Background Gradient */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-primary/10 blur-[150px] rounded-full" />
+        <div className="absolute top-20 right-1/4 w-[400px] h-[300px] bg-secondary/5 blur-[120px] rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 relative z-10 flex flex-col items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-28 pb-20 flex flex-col items-center">
         
         {/* Tab Switcher */}
-        <div className="flex bg-white/5 p-1 rounded-2xl mb-8 backdrop-blur-md border border-white/5">
+        <div className="flex bg-[#1a1a1a] p-1 rounded-xl mb-8 border border-white/5">
           <button 
             onClick={() => setActiveTab('swap')}
-            className={`px-8 py-2.5 rounded-xl text-sm font-bold font-display transition-all duration-300 ${activeTab === 'swap' ? 'bg-primary text-white shadow-lg shadow-primary/25' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              activeTab === 'swap' 
+                ? 'bg-primary text-white' 
+                : 'text-white/50 hover:text-white'
+            }`}
           >
-            Instant Swap
+            Swap
           </button>
           <button 
             onClick={() => setActiveTab('position')}
-            className={`px-8 py-2.5 rounded-xl text-sm font-bold font-display transition-all duration-300 ${activeTab === 'position' ? 'bg-secondary text-black shadow-lg shadow-secondary/25' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              activeTab === 'position' 
+                ? 'bg-secondary text-black' 
+                : 'text-white/50 hover:text-white'
+            }`}
           >
             Limit Order
           </button>
         </div>
 
         {/* Dynamic Content */}
-        <motion.div 
+        <AnimatePresence mode="wait">
+          <motion.div 
             key={activeTab}
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
             className="w-full flex justify-center"
-        >
+          >
             {activeTab === 'swap' ? <SwapCard /> : <PositionCard />}
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Marketing / Info */}
-        <div className="mt-20 text-center max-w-2xl opacity-60 hover:opacity-100 transition-opacity">
-            <h3 className="font-display font-bold text-2xl mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
-                Advanced Trading. Zero Compromise.
-            </h3>
-            <p className="text-white/60 leading-relaxed">
-                Execute lightning-fast swaps powered by Jupiter or automate your strategy with on-chain Stop Loss & Take Profit orders that never sleep.
-            </p>
+        {/* Info Section */}
+        <div className="mt-16 text-center max-w-lg">
+          <p className="text-white/40 text-sm">
+            Trade instantly with Jupiter aggregation or set automated limit orders with on-chain execution.
+          </p>
         </div>
-
       </div>
     </main>
   );
